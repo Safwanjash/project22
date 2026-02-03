@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/language-provider"
+import { useTheme } from "@/components/providers/theme-provider"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -12,7 +13,16 @@ import {
   CreditCard,
   ArrowRight,
   Check,
+  Moon,
+  Sun,
+  Globe,
 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function HomePage() {
   const { t } = useLanguage()
