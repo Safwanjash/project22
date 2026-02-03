@@ -53,6 +53,7 @@ export const translations = {
       dashboard: "لوحة التحكم",
       logout: "تسجيل الخروج",
       language: "اللغة",
+      legal: "قانوني",
       currency: "العملة",
       s: "ث",
       optional: "اختياري",
