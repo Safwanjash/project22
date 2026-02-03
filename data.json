@@ -1,0 +1,413 @@
+{
+  "customers": [
+    {
+      "id": "c1",
+      "name": "أحمد محمد",
+      "phone": "0501234567",
+      "address": "شارع الملك فهد، حي العليا",
+      "city": "الرياض",
+      "totalOrders": 15,
+      "returnCount": 1,
+      "createdAt": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "c2",
+      "name": "فاطمة علي",
+      "phone": "0559876543",
+      "address": "شارع التحلية، حي السلامة",
+      "city": "جدة",
+      "totalOrders": 8,
+      "returnCount": 0,
+      "createdAt": "2024-02-20T00:00:00.000Z"
+    },
+    {
+      "id": "c3",
+      "name": "محمد العمري",
+      "phone": "0543216789",
+      "address": "شارع الأمير سلطان",
+      "city": "الدمام",
+      "totalOrders": 22,
+      "returnCount": 4,
+      "notes": "عميل يرفض الاستلام أحياناً",
+      "createdAt": "2024-01-05T00:00:00.000Z"
+    },
+    {
+      "id": "c4",
+      "name": "نورة السعيد",
+      "phone": "0567891234",
+      "address": "حي النسيم",
+      "city": "الرياض",
+      "totalOrders": 5,
+      "returnCount": 0,
+      "createdAt": "2024-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "c5",
+      "name": "خالد الحربي",
+      "phone": "0512345678",
+      "address": "شارع الثلاثين",
+      "city": "بريدة",
+      "totalOrders": 12,
+      "returnCount": 2,
+      "createdAt": "2024-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "dd07667f-d113-44aa-844e-772c7805246b",
+      "name": "sdsd",
+      "phone": "0595203958",
+      "address": "الخليل - حلحول - واد قبون",
+      "city": "Hebron",
+      "notes": "",
+      "totalOrders": 0,
+      "returnCount": 0,
+      "createdAt": "2026-02-02T17:02:57.305Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "p1",
+      "name": "عباية سوداء فاخرة",
+      "price": 350,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "p2",
+      "name": "فستان سهرة",
+      "price": 450,
+      "isActive": true,
+      "createdAt": "2024-01-05T00:00:00.000Z"
+    },
+    {
+      "id": "p3",
+      "name": "حقيبة يد جلدية",
+      "price": 180,
+      "isActive": true,
+      "createdAt": "2024-01-10T00:00:00.000Z"
+    },
+    {
+      "id": "p4",
+      "name": "شال كشميري",
+      "price": 120,
+      "isActive": true,
+      "createdAt": "2024-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "p5",
+      "name": "أحذية نسائية",
+      "price": 220,
+      "isActive": false,
+      "createdAt": "2024-02-15T00:00:00.000Z"
+    },
+    {
+      "id": "p6",
+      "name": "طقم مجوهرات",
+      "price": 580,
+      "isActive": true,
+      "createdAt": "2024-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "085b8ee1-3c95-491e-ac5b-df97b34afe3d",
+      "name": "kjsffsd",
+      "price": 20,
+      "isActive": true,
+      "createdAt": "2026-02-02T17:01:27.576Z"
+    }
+  ],
+  "deliveryCompanies": [
+    {
+      "id": "d1",
+      "name": "سمسا إكسبريس",
+      "phone": "920009999",
+      "cost": 25,
+      "isActive": true
+    },
+    {
+      "id": "d2",
+      "name": "أرامكس",
+      "phone": "920027447",
+      "cost": 30,
+      "isActive": true
+    },
+    {
+      "id": "d3",
+      "name": "ناقل",
+      "phone": "8002464444",
+      "cost": 22,
+      "isActive": true
+    },
+    {
+      "id": "d4",
+      "name": "زاجل",
+      "phone": "920000177",
+      "cost": 28,
+      "isActive": false
+    },
+    {
+      "id": "77f9f310-0a2e-4a9f-a9b6-e3d9e53b4b3b",
+      "name": "djfklsf",
+      "phone": "0595203958",
+      "cost": 30,
+      "isActive": true
+    }
+  ],
+  "orders": [
+    {
+      "id": "o1",
+      "orderNumber": "ORD-001",
+      "customer": {
+        "id": "c1",
+        "name": "أحمد محمد",
+        "phone": "0501234567",
+        "address": "شارع الملك فهد، حي العليا",
+        "city": "الرياض",
+        "totalOrders": 15,
+        "returnCount": 1,
+        "createdAt": "2024-01-15T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p1",
+          "productName": "عباية سوداء فاخرة",
+          "quantity": 1,
+          "price": 350
+        },
+        {
+          "productId": "p3",
+          "productName": "حقيبة يد جلدية",
+          "quantity": 1,
+          "price": 180
+        }
+      ],
+      "status": "new",
+      "paymentMethod": "cod",
+      "paymentStatus": "unpaid",
+      "deliveryCompany": {
+        "id": "d1",
+        "name": "سمسا إكسبريس",
+        "phone": "920009999",
+        "cost": 25,
+        "isActive": true
+      },
+      "deliveryCost": 25,
+      "subtotal": 530,
+      "total": 555,
+      "createdAt": "2026-02-02T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "o2",
+      "orderNumber": "ORD-002",
+      "customer": {
+        "id": "c2",
+        "name": "فاطمة علي",
+        "phone": "0559876543",
+        "address": "شارع التحلية، حي السلامة",
+        "city": "جدة",
+        "totalOrders": 8,
+        "returnCount": 0,
+        "createdAt": "2024-02-20T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p2",
+          "productName": "فستان سهرة",
+          "quantity": 1,
+          "price": 450
+        }
+      ],
+      "status": "processing",
+      "paymentMethod": "bank_transfer",
+      "paymentStatus": "paid",
+      "paymentProof": "/proof.jpg",
+      "deliveryCompany": {
+        "id": "d2",
+        "name": "أرامكس",
+        "phone": "920027447",
+        "cost": 30,
+        "isActive": true
+      },
+      "deliveryCost": 30,
+      "subtotal": 450,
+      "total": 480,
+      "createdAt": "2026-02-01T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "o3",
+      "orderNumber": "ORD-003",
+      "customer": {
+        "id": "c3",
+        "name": "محمد العمري",
+        "phone": "0543216789",
+        "address": "شارع الأمير سلطان",
+        "city": "الدمام",
+        "totalOrders": 22,
+        "returnCount": 4,
+        "notes": "عميل يرفض الاستلام أحياناً",
+        "createdAt": "2024-01-05T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p4",
+          "productName": "شال كشميري",
+          "quantity": 2,
+          "price": 120
+        },
+        {
+          "productId": "p6",
+          "productName": "طقم مجوهرات",
+          "quantity": 1,
+          "price": 580
+        }
+      ],
+      "status": "with_delivery",
+      "paymentMethod": "cod",
+      "paymentStatus": "unpaid",
+      "deliveryCompany": {
+        "id": "d3",
+        "name": "ناقل",
+        "phone": "8002464444",
+        "cost": 22,
+        "isActive": true
+      },
+      "deliveryCost": 22,
+      "subtotal": 820,
+      "total": 842,
+      "createdAt": "2026-01-31T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "o4",
+      "orderNumber": "ORD-004",
+      "customer": {
+        "id": "c4",
+        "name": "نورة السعيد",
+        "phone": "0567891234",
+        "address": "حي النسيم",
+        "city": "الرياض",
+        "totalOrders": 5,
+        "returnCount": 0,
+        "createdAt": "2024-03-10T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p1",
+          "productName": "عباية سوداء فاخرة",
+          "quantity": 2,
+          "price": 350
+        }
+      ],
+      "status": "delivered",
+      "paymentMethod": "cod",
+      "paymentStatus": "paid",
+      "deliveryCompany": {
+        "id": "d1",
+        "name": "سمسا إكسبريس",
+        "phone": "920009999",
+        "cost": 25,
+        "isActive": true
+      },
+      "deliveryCost": 25,
+      "subtotal": 700,
+      "total": 725,
+      "createdAt": "2026-01-30T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "o5",
+      "orderNumber": "ORD-005",
+      "customer": {
+        "id": "c5",
+        "name": "خالد الحربي",
+        "phone": "0512345678",
+        "address": "شارع الثلاثين",
+        "city": "بريدة",
+        "totalOrders": 12,
+        "returnCount": 2,
+        "createdAt": "2024-02-01T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p3",
+          "productName": "حقيبة يد جلدية",
+          "quantity": 1,
+          "price": 180
+        }
+      ],
+      "status": "returned",
+      "paymentMethod": "cod",
+      "paymentStatus": "unpaid",
+      "deliveryCompany": {
+        "id": "d2",
+        "name": "أرامكس",
+        "phone": "920027447",
+        "cost": 30,
+        "isActive": true
+      },
+      "deliveryCost": 30,
+      "subtotal": 180,
+      "total": 210,
+      "notes": "العميل رفض الاستلام",
+      "createdAt": "2026-01-29T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "o6",
+      "orderNumber": "ORD-006",
+      "customer": {
+        "id": "c1",
+        "name": "أحمد محمد",
+        "phone": "0501234567",
+        "address": "شارع الملك فهد، حي العليا",
+        "city": "الرياض",
+        "totalOrders": 15,
+        "returnCount": 1,
+        "createdAt": "2024-01-15T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "p6",
+          "productName": "طقم مجوهرات",
+          "quantity": 1,
+          "price": 580
+        }
+      ],
+      "status": "delivered",
+      "paymentMethod": "bank_transfer",
+      "paymentStatus": "paid",
+      "deliveryCompany": {
+        "id": "d3",
+        "name": "ناقل",
+        "phone": "8002464444",
+        "cost": 22,
+        "isActive": true
+      },
+      "deliveryCost": 22,
+      "subtotal": 580,
+      "total": 602,
+      "createdAt": "2026-01-28T17:01:06.715Z",
+      "updatedAt": "2026-02-02T17:01:06.715Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "أحمد محمد",
+      "email": "ahmed@store.com",
+      "phone": "0501234567",
+      "role": "owner",
+      "status": "active",
+      "createdAt": "2026-02-02T17:01:06.715Z"
+    },
+    {
+      "id": "dd8b3524-98bb-406f-9c6a-bb0c9766e975",
+      "name": "SAFWAN M SADAH",
+      "email": "ebrubederli@gmail.com",
+      "phone": "0595203958",
+      "role": "staff",
+      "status": "active",
+      "createdAt": "2026-02-02T17:04:20.626Z"
+    }
+  ]
+}
