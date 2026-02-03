@@ -73,7 +73,10 @@ export default function AdminDashboardLayout({
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40">
+      <div className={cn(
+        "lg:hidden fixed top-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40",
+        isRTL ? "right-0 left-0" : "right-0 left-0"
+      )}>
         <h1 className="font-bold text-lg">{t("admin.title")}</h1>
         <Button
           variant="ghost"
@@ -91,8 +94,11 @@ export default function AdminDashboardLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 w-64 h-screen bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "fixed top-0 w-64 h-screen bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300",
+          isRTL
+            ? "right-0 border-l lg:border-l"
+            : "left-0 border-r lg:border-r",
+          sidebarOpen ? "translate-x-0" : (isRTL ? "translate-x-full lg:translate-x-0" : "-translate-x-full lg:translate-x-0")
         )}
       >
         {/* Logo Area */}
