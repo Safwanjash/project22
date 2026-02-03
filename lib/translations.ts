@@ -654,6 +654,7 @@ export const translations = {
       dashboard: "Dashboard",
       logout: "Logout",
       language: "Language",
+      legal: "Legal",
       currency: "Currency",
       disable: "Disable",
       enable: "Enable",
