@@ -68,8 +68,68 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* Top Controls */}
+      <div className="flex justify-end gap-2 p-4">
+        {/* Language Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Change language">
+              <Globe className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => setLanguage("ar")}
+              className={language === "ar" ? "bg-slate-100 dark:bg-slate-800" : ""}
+            >
+              العربية
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setLanguage("en")}
+              className={language === "en" ? "bg-slate-100 dark:bg-slate-800" : ""}
+            >
+              English
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Theme Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" title="Change theme">
+              {resolvedTheme === "dark" ? (
+                <Moon className="w-5 h-5" />
+              ) : (
+                <Sun className="w-5 h-5" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => setTheme("light")}
+              className={theme === "light" ? "bg-slate-100 dark:bg-slate-800" : ""}
+            >
+              {t("settings.lightMode")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setTheme("dark")}
+              className={theme === "dark" ? "bg-slate-100 dark:bg-slate-800" : ""}
+            >
+              {t("settings.darkMode")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setTheme("system")}
+              className={theme === "system" ? "bg-slate-100 dark:bg-slate-800" : ""}
+            >
+              {t("settings.systemMode")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("login.title")}</h1>
@@ -181,6 +241,7 @@ export default function LoginPage() {
             {t("common.back")}
           </Link>
         </div>
+      </div>
       </div>
     </div>
   )
