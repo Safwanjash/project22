@@ -1116,6 +1116,7 @@ export const translations = {
       theme: "Theme",
       lightMode: "Light Mode",
       darkMode: "Dark Mode",
+      systemMode: "System",
       saveSettings: "Save Settings",
       myStore: "My Store",
       storeInfoDesc: "Update your store information and contact details",
