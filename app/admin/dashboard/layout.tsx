@@ -124,7 +124,7 @@ export default function AdminDashboardLayout({
                     onClick={() => setSidebarOpen(false)}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="flex-1 text-left">{item.label}</span>
+                    <span className={cn("flex-1", isRTL ? "text-right" : "text-left")}>{item.label}</span>
                   </Button>
                 </Link>
               )
