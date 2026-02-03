@@ -126,8 +126,94 @@ export default function AdminDashboardLayout({
           </nav>
         </ScrollArea>
 
-        {/* Logout Button */}
-        <div className="border-t border-slate-200 dark:border-slate-800 p-4">
+        {/* Controls and Logout */}
+        <div className="border-t border-slate-200 dark:border-slate-800 p-4 space-y-2">
+          {/* Language and Theme Toggles */}
+          <div className="flex gap-2">
+            {/* Language Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Change language"
+                  className="flex-1"
+                >
+                  <Globe className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align={isRTL ? "start" : "end"}
+                className="w-48"
+              >
+                <DropdownMenuItem
+                  onClick={() => setLanguage("ar")}
+                  className={
+                    language === "ar" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  العربية
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLanguage("en")}
+                  className={
+                    language === "en" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Theme Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Change theme"
+                  className="flex-1"
+                >
+                  {resolvedTheme === "dark" ? (
+                    <Moon className="w-4 h-4" />
+                  ) : (
+                    <Sun className="w-4 h-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align={isRTL ? "start" : "end"}
+                className="w-48"
+              >
+                <DropdownMenuItem
+                  onClick={() => setTheme("light")}
+                  className={
+                    theme === "light" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.lightMode")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("dark")}
+                  className={
+                    theme === "dark" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.darkMode")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("system")}
+                  className={
+                    theme === "system" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.systemMode")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Logout Button */}
           <Button
             variant="outline"
             className={cn(
