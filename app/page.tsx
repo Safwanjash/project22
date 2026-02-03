@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function HomePage() {
-  const { t } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
+  const { theme, setTheme, resolvedTheme } = useTheme()
 
   const features = [
     {
