@@ -3,6 +3,7 @@
 import React from "react"
 import Link from "next/link"
 import { useLanguage } from "@/components/providers/language-provider"
+import { useTheme } from "@/components/providers/theme-provider"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -15,8 +16,17 @@ import {
   LogOut,
   Menu,
   X,
+  Moon,
+  Sun,
+  Globe,
 } from "lucide-react"
 import { useState } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AdminDashboardLayout({
   children,
