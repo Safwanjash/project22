@@ -33,7 +33,8 @@ export default function AdminDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { isRTL, t } = useLanguage()
+  const { isRTL, t, language, setLanguage } = useLanguage()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navItems = [
