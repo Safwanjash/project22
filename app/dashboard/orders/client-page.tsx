@@ -21,13 +21,26 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { StatusBadge, type OrderStatus } from "@/components/dashboard/status-badge"
-import { Plus, Search, Eye } from "lucide-react"
+import { Plus, Search, Eye, Trash2 } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { AdvancedFilterPanel, getPresetSavedFilters, type FilterValues } from "@/components/dashboard/advanced-filter-panel"
 import { useRouter } from "next/navigation"
 import type { Order } from "@/lib/types"
 import { PriceDisplay } from "@/components/dashboard/price-display"
 import { useLanguage } from "@/components/providers/language-provider"
+import { deleteOrder } from "@/app/actions"
+import { useToast } from "@/hooks/use-toast"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface OrdersClientPageProps {
     initialOrders: Order[]
@@ -36,6 +49,7 @@ interface OrdersClientPageProps {
 export default function OrdersClientPage({ initialOrders }: OrdersClientPageProps) {
     const { t, isRTL, language } = useLanguage()
     const router = useRouter()
+    const { toast } = useToast()
     const [orders, setOrders] = useState(initialOrders)
     const [searchQuery, setSearchQuery] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -63,6 +77,16 @@ export default function OrdersClientPage({ initialOrders }: OrdersClientPageProp
 
         return matchesSearch && matchesStatus && matchesAdvanced
     })
+
+    const handleDeleteOrder = async (id: string) => {
+        const result = await deleteOrder(id)
+        if (result.success) {
+            setOrders(orders.filter(o => o.id !== id))
+            toast({ title: t("common.success"), description: result.message })
+        } else {
+            toast({ title: t("common.error"), description: result.message, variant: "destructive" })
+        }
+    }
 
     return (
         <div className="space-y-6 pt-12 lg:pt-0">
@@ -168,11 +192,37 @@ export default function OrdersClientPage({ initialOrders }: OrdersClientPageProp
                                             {new Date(order.createdAt).toLocaleDateString(language === "ar" ? "ar-SA" : "en-US")}
                                         </TableCell>
                                         <TableCell>
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={`/dashboard/orders/${order.id}`}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                            <div className="flex items-center gap-1">
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <Link href={`/dashboard/orders/${order.id}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                {t("confirm.delete")}
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => handleDeleteOrder(order.id)}
+                                                                className="bg-destructive hover:bg-destructive/90"
+                                                            >
+                                                                {t("common.delete")}
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

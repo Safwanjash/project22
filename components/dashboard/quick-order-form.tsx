@@ -52,6 +52,8 @@ export interface QuickOrderData {
   customerCity: string
   productId: string
   productName: string
+  variantId?: string
+  variantDetails?: string
   quantity: number
   price: number
   paymentMethod: "cod" | "bank_transfer"
@@ -68,6 +70,7 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
   // Form data
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer">("cod")
   const [notes, setNotes] = useState("")
@@ -93,6 +96,7 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
       setStep("customer")
       setSelectedCustomer(lastCustomer || null)
       setSelectedProduct(null)
+      setSelectedVariant(null)
       setQuantity(1)
       setPaymentMethod("cod")
       setNotes("")
@@ -115,6 +119,10 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
           e.preventDefault()
           setStep("product")
         } else if (step === "product" && selectedProduct) {
+          // Check if variant product requires variant selection
+          if (selectedProduct.type === "variant" && !selectedVariant) {
+            return // Don't proceed without variant
+          }
           e.preventDefault()
           setStep("payment")
         } else if (step === "payment") {
@@ -141,8 +149,19 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
       customerCity: selectedCustomer.city,
       productId: selectedProduct.id,
       productName: selectedProduct.name,
+      variantId: selectedVariant || undefined,
+      variantDetails: selectedVariant ? (() => {
+        const variant = selectedProduct.variants?.find(v => v.id === selectedVariant)
+        return variant ? `${t("products.size")}: ${variant.size}, ${t("products.color")}: ${variant.color}` : undefined
+      })() : undefined,
       quantity,
-      price: selectedProduct.price * quantity,
+      price: (() => {
+        if (selectedProduct.type === "variant" && selectedVariant) {
+          const variant = selectedProduct.variants?.find(v => v.id === selectedVariant)
+          return (variant?.price || selectedProduct.price) * quantity
+        }
+        return selectedProduct.price * quantity
+      })(),
       paymentMethod,
       notes: notes || undefined
     }
@@ -281,7 +300,10 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
                 {filteredProducts.map(product => (
                   <button
                     key={product.id}
-                    onClick={() => setSelectedProduct(product)}
+                    onClick={() => {
+                      setSelectedProduct(product)
+                      setSelectedVariant(null)
+                    }}
                     className={`w-full p-3 rounded-lg ${isRTL ? "text-right" : "text-left"} transition-colors ${selectedProduct?.id === product.id
                       ? "bg-primary/10 border border-primary"
                       : "bg-muted/50 hover:bg-muted"
@@ -294,6 +316,37 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
                   </button>
                 ))}
               </div>
+
+              {selectedProduct && selectedProduct.type === "variant" && selectedProduct.variants && (
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  <Label>{t("products.selectVariant")}</Label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {selectedProduct.variants
+                      .filter(v => v.isActive)
+                      .map(variant => (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => setSelectedVariant(variant.id)}
+                          className={`p-2 rounded-lg text-sm transition-colors ${isRTL ? "text-right" : "text-left"} ${selectedVariant === variant.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background hover:bg-muted border"
+                            }`}
+                        >
+                          <p className="font-medium">{variant.size} - {variant.color}</p>
+                          {variant.price && variant.price !== selectedProduct.price && (
+                            <p className="text-xs"><PriceDisplay amount={variant.price} /></p>
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                  {selectedProduct.variants.filter(v => v.isActive).length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-2">
+                      {t("products.noVariantsAvailable")}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {selectedProduct && (
                 <div className="flex items-center gap-3">
@@ -314,7 +367,7 @@ export function QuickOrderForm({ onSubmit, lastCustomer }: QuickOrderFormProps) 
                 </Button>
                 <Button
                   className="flex-1"
-                  disabled={!selectedProduct}
+                  disabled={!selectedProduct || (selectedProduct.type === "variant" && !selectedVariant)}
                   onClick={() => setStep("payment")}
                 >
                   {t("common.next")}: {t("orders.paymentMethod")}

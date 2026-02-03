@@ -22,10 +22,21 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, AlertTriangle, Phone, MapPin, ShoppingCart, Loader2 } from "lucide-react"
+import { Plus, Search, AlertTriangle, Phone, MapPin, ShoppingCart, Loader2, Trash2 } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { CustomerRiskIndicator } from "@/components/dashboard/customer-risk-indicator"
-import { createCustomer } from "@/app/actions"
+import { createCustomer, deleteCustomer } from "@/app/actions"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import type { Customer, Order } from "@/lib/types"
 import { PriceDisplay } from "@/components/dashboard/price-display"
@@ -77,6 +88,16 @@ export default function CustomersClientPage({ initialCustomers, initialOrders }:
 
     const getCustomerOrders = (customerId: string) => {
         return orders.filter((order) => order.customer.id === customerId)
+    }
+
+    const handleDeleteCustomer = async (id: string) => {
+        const result = await deleteCustomer(id)
+        if (result.success) {
+            setCustomers(customers.filter(c => c.id !== id))
+            toast({ title: t("common.success"), description: result.message })
+        } else {
+            toast({ title: t("common.error"), description: result.message, variant: "destructive" })
+        }
     }
 
     const isHighRisk = (customer: Customer) => {
@@ -302,6 +323,35 @@ export default function CustomersClientPage({ initialCustomers, initialOrders }:
                                                     )}
                                                 </DialogContent>
                                             </Dialog>
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            {t("confirm.delete")}
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => handleDeleteCustomer(customer.id)}
+                                                            className="bg-destructive hover:bg-destructive/90"
+                                                        >
+                                                            {t("common.delete")}
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </TableCell>
                                     </TableRow>
                                 ))}

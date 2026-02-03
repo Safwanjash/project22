@@ -8,16 +8,20 @@ import { randomUUID } from "crypto"
 
 const productSchema = z.object({
   name: z.string().min(2, "اسم المنتج يجب أن يكون حرفين على الأقل"),
+  type: z.enum(["simple", "variant"]).default("simple"),
   price: z.coerce.number().min(1, "السعر يجب أن يكون أكبر من 0"),
   image: z.string().optional(),
   isActive: z.boolean().default(true),
+  variants: z.string().optional(), // JSON string of variants
 })
 
 export async function createProduct(currentState: any, formData: FormData) {
   const rawData = {
     name: formData.get("name"),
+    type: formData.get("type") || "simple",
     price: formData.get("price"),
     image: formData.get("image"),
+    variants: formData.get("variants"),
   }
 
   const result = productSchema.safeParse(rawData)
@@ -32,10 +36,25 @@ export async function createProduct(currentState: any, formData: FormData) {
 
   try {
     const db = await readDb()
+    
+    // Parse variants if provided
+    let variants = undefined
+    if (result.data.type === "variant" && result.data.variants) {
+      try {
+        variants = JSON.parse(result.data.variants)
+      } catch (e) {
+        return { success: false, message: "بيانات المتغيرات غير صحيحة" }
+      }
+    }
+
     const newProduct = {
       id: randomUUID(),
-      ...result.data,
+      name: result.data.name,
+      type: result.data.type,
+      price: result.data.price,
+      variants,
       image: result.data.image || undefined,
+      isActive: result.data.isActive,
       createdAt: new Date(),
     }
 
@@ -53,8 +72,10 @@ export async function updateProduct(currentState: any, formData: FormData) {
     const id = formData.get("id") as string
     const rawData = {
       name: formData.get("name"),
+      type: formData.get("type") || "simple",
       price: formData.get("price"),
       image: formData.get("image"),
+      variants: formData.get("variants"),
     }
   
     const result = productSchema.safeParse(rawData)
@@ -75,9 +96,22 @@ export async function updateProduct(currentState: any, formData: FormData) {
           return { success: false, message: "المنتج غير موجود" }
       }
 
+      // Parse variants if provided
+      let variants = undefined
+      if (result.data.type === "variant" && result.data.variants) {
+        try {
+          variants = JSON.parse(result.data.variants)
+        } catch (e) {
+          return { success: false, message: "بيانات المتغيرات غير صحيحة" }
+        }
+      }
+
       db.products[index] = {
         ...db.products[index],
-        ...result.data,
+        name: result.data.name,
+        type: result.data.type,
+        price: result.data.price,
+        variants,
         image: result.data.image || undefined,
       }
   
@@ -109,6 +143,25 @@ export async function toggleProductStatus(id: string) {
       }
 }
 
+
+export async function deleteProduct(id: string) {
+    try {
+        const db = await readDb()
+        const initialLength = db.products.length
+        db.products = db.products.filter(p => p.id !== id)
+        
+        if (db.products.length === initialLength) {
+            return { success: false, message: "المنتج غير موجود" }
+        }
+
+        await writeDb(db)
+        revalidatePath("/dashboard/products")
+        return { success: true, message: "تم حذف المنتج بنجاح" }
+    } catch (error) {
+        return { success: false, message: "حدث خطأ أثناء الحذف" }
+    }
+}
+
 // Temporary data fetcher for client components until everything is server-side
 export async function getProducts() {
     const db = await readDb()
@@ -121,6 +174,8 @@ export async function getProducts() {
 
 const orderItemSchema = z.object({
   productId: z.string(),
+  variantId: z.string().optional(),
+  variantDetails: z.string().optional(),
   quantity: z.coerce.number().min(1),
 })
 
@@ -189,10 +244,27 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
         if (!product) continue // or error
         
         let price = product.price
+        let variantDetails = item.variantDetails
+
+        // Handle variant pricing and details
+        if (product.type === "variant" && item.variantId && product.variants) {
+            const variant = product.variants.find(v => v.id === item.variantId)
+            if (variant) {
+                if (variant.price) {
+                    price = variant.price
+                }
+                // Ensure variant details are set if not provided by frontend (though frontend sends it)
+                if (!variantDetails) {
+                    variantDetails = `Size: ${variant.size}, Color: ${variant.color}`
+                }
+            }
+        }
         
         orderItemsResolved.push({
             productId: product.id,
             productName: product.name,
+            variantId: item.variantId,
+            variantDetails: variantDetails,
             quantity: item.quantity,
             price: price
         })
@@ -249,6 +321,27 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
     console.error(error)
     return { success: false, message: "حدث خطأ أثناء إنشاء الطلب" }
   }
+}
+
+
+
+export async function deleteOrder(id: string) {
+    try {
+        const db = await readDb()
+        const initialLength = db.orders.length
+        db.orders = db.orders.filter(o => o.id !== id)
+        
+        if (db.orders.length === initialLength) {
+            return { success: false, message: "الطلب غير موجود" }
+        }
+
+        await writeDb(db)
+        revalidatePath("/dashboard/orders")
+        revalidatePath("/dashboard")
+        return { success: true, message: "تم حذف الطلب بنجاح" }
+    } catch (error) {
+        return { success: false, message: "حدث خطأ أثناء الحذف" }
+    }
 }
 
 export async function getOrders() {
@@ -312,6 +405,25 @@ export async function createCustomer(currentState: any, formData: FormData) {
   } catch (error) {
     return { success: false, message: "حدث خطأ أثناء الحفظ" }
   }
+}
+
+
+export async function deleteCustomer(id: string) {
+    try {
+        const db = await readDb()
+        const initialLength = db.customers.length
+        db.customers = db.customers.filter(c => c.id !== id)
+        
+        if (db.customers.length === initialLength) {
+            return { success: false, message: "العميل غير موجود" }
+        }
+
+        await writeDb(db)
+        revalidatePath("/dashboard/customers")
+        return { success: true, message: "تم حذف العميل بنجاح" }
+    } catch (error) {
+        return { success: false, message: "حدث خطأ أثناء الحذف" }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -418,6 +530,25 @@ export async function toggleDeliveryCompanyStatus(id: string) {
       } catch (error) {
         return { success: false, message: "حدث خطأ أثناء الحفظ" }
       }
+}
+
+
+export async function deleteDeliveryCompany(id: string) {
+    try {
+        const db = await readDb()
+        const initialLength = db.deliveryCompanies.length
+        db.deliveryCompanies = db.deliveryCompanies.filter(d => d.id !== id)
+        
+        if (db.deliveryCompanies.length === initialLength) {
+            return { success: false, message: "الشركة غير موجودة" }
+        }
+
+        await writeDb(db)
+        revalidatePath("/dashboard/delivery")
+        return { success: true, message: "تم حذف الشركة بنجاح" }
+    } catch (error) {
+        return { success: false, message: "حدث خطأ أثناء الحذف" }
+    }
 }
 
 export async function getDeliveryCompanies() {

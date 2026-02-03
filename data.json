@@ -37,7 +37,7 @@
       "phone": "0567891234",
       "address": "حي النسيم",
       "city": "الرياض",
-      "totalOrders": 5,
+      "totalOrders": 6,
       "returnCount": 0,
       "createdAt": "2024-03-10T00:00:00.000Z"
     },
@@ -107,11 +107,54 @@
       "createdAt": "2024-03-01T00:00:00.000Z"
     },
     {
-      "id": "085b8ee1-3c95-491e-ac5b-df97b34afe3d",
-      "name": "kjsffsd",
-      "price": 20,
+      "id": "140f73cd-cbfa-4f90-8d03-1e7af373b1ae",
+      "name": "Apple",
+      "type": "variant",
+      "price": 50,
+      "variants": [
+        {
+          "size": "s",
+          "color": "احمر",
+          "price": 25,
+          "stock": 10,
+          "isActive": true,
+          "id": "v1770129190713"
+        },
+        {
+          "size": "m",
+          "color": "ابيض",
+          "price": 30,
+          "stock": 5,
+          "isActive": true,
+          "id": "v1770129224092"
+        },
+        {
+          "size": "xL",
+          "color": "x",
+          "price": 15,
+          "stock": 15,
+          "isActive": true,
+          "id": "v1770130603195"
+        },
+        {
+          "size": "L",
+          "color": "15",
+          "price": 50,
+          "stock": 5,
+          "isActive": true,
+          "id": "v1770130613971"
+        },
+        {
+          "size": "XXL",
+          "color": "13",
+          "price": 26,
+          "stock": 5,
+          "isActive": true,
+          "id": "v1770130627259"
+        }
+      ],
       "isActive": true,
-      "createdAt": "2026-02-02T17:01:27.576Z"
+      "createdAt": "2026-02-03T14:33:48.534Z"
     }
   ],
   "deliveryCompanies": [
@@ -152,6 +195,44 @@
     }
   ],
   "orders": [
+    {
+      "id": "ca1116f3-10de-4bb1-ae98-4032901ca370",
+      "orderNumber": "ORD-007",
+      "customer": {
+        "id": "c4",
+        "name": "نورة السعيد",
+        "phone": "0567891234",
+        "address": "حي النسيم",
+        "city": "الرياض",
+        "totalOrders": 6,
+        "returnCount": 0,
+        "createdAt": "2024-03-10T00:00:00.000Z"
+      },
+      "items": [
+        {
+          "productId": "140f73cd-cbfa-4f90-8d03-1e7af373b1ae",
+          "productName": "Apple",
+          "quantity": 1,
+          "price": 50
+        }
+      ],
+      "status": "new",
+      "paymentMethod": "cod",
+      "paymentStatus": "unpaid",
+      "deliveryCompany": {
+        "id": "d2",
+        "name": "أرامكس",
+        "phone": "920027447",
+        "cost": 30,
+        "isActive": true
+      },
+      "deliveryCost": 30,
+      "subtotal": 50,
+      "total": 80,
+      "notes": "",
+      "createdAt": "2026-02-03T14:48:47.174Z",
+      "updatedAt": "2026-02-03T14:48:47.174Z"
+    },
     {
       "id": "o1",
       "orderNumber": "ORD-001",

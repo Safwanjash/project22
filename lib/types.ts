@@ -12,10 +12,22 @@ export interface Customer {
   createdAt: Date
 }
 
+export interface ProductVariant {
+  id: string
+  size: string
+  color: string
+  price?: number // Optional override price
+  sku?: string // Optional SKU
+  stock?: number // Optional stock quantity
+  isActive: boolean
+}
+
 export interface Product {
     id: string
     name: string
-    price: number
+    type: "simple" | "variant" // Product type
+    price: number // Base price for simple, or default for variants
+    variants?: ProductVariant[] // Variants array for variant products
     image?: string
     isActive: boolean
     createdAt: Date
@@ -32,6 +44,8 @@ export interface DeliveryCompany {
 export interface OrderItem {
   productId: string
   productName: string
+  variantId?: string // Optional variant ID
+  variantDetails?: string // e.g. "Size: L, Color: Blue"
   quantity: number
   price: number
 }

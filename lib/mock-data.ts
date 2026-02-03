@@ -58,6 +58,7 @@ export const products: Product[] = [
   {
     id: "p1",
     name: "عباية سوداء فاخرة",
+    type: "simple",
     price: 350,
     isActive: true,
     createdAt: new Date("2024-01-01"),
@@ -65,6 +66,7 @@ export const products: Product[] = [
   {
     id: "p2",
     name: "فستان سهرة",
+    type: "simple",
     price: 450,
     isActive: true,
     createdAt: new Date("2024-01-05"),
@@ -72,6 +74,7 @@ export const products: Product[] = [
   {
     id: "p3",
     name: "حقيبة يد جلدية",
+    type: "simple",
     price: 180,
     isActive: true,
     createdAt: new Date("2024-01-10"),
@@ -79,6 +82,7 @@ export const products: Product[] = [
   {
     id: "p4",
     name: "شال كشميري",
+    type: "simple",
     price: 120,
     isActive: true,
     createdAt: new Date("2024-02-01"),
@@ -86,6 +90,7 @@ export const products: Product[] = [
   {
     id: "p5",
     name: "أحذية نسائية",
+    type: "simple",
     price: 220,
     isActive: false,
     createdAt: new Date("2024-02-15"),
@@ -93,9 +98,50 @@ export const products: Product[] = [
   {
     id: "p6",
     name: "طقم مجوهرات",
+    type: "simple",
     price: 580,
     isActive: true,
     createdAt: new Date("2024-03-01"),
+  },
+  // Variant product example - T-Shirt with sizes and colors
+  {
+    id: "p7",
+    name: "تي شيرت قطني",
+    type: "variant",
+    price: 80, // Base price
+    isActive: true,
+    variants: [
+      { id: "v1", size: "S", color: "أبيض", price: 80, isActive: true },
+      { id: "v2", size: "M", color: "أبيض", price: 80, isActive: true },
+      { id: "v3", size: "L", color: "أبيض", price: 80, isActive: true },
+      { id: "v4", size: "XL", color: "أبيض", price: 85, isActive: true },
+      { id: "v5", size: "S", color: "أسود", price: 80, isActive: true },
+      { id: "v6", size: "M", color: "أسود", price: 80, isActive: true },
+      { id: "v7", size: "L", color: "أسود", price: 80, isActive: true },
+      { id: "v8", size: "XL", color: "أسود", price: 85, isActive: true },
+      { id: "v9", size: "S", color: "أزرق", price: 80, isActive: true },
+      { id: "v10", size: "M", color: "أزرق", price: 80, isActive: true },
+      { id: "v11", size: "L", color: "أزرق", price: 80, isActive: false }, // Disabled variant
+      { id: "v12", size: "XL", color: "أزرق", price: 85, isActive: true },
+    ],
+    createdAt: new Date("2024-03-05"),
+  },
+  // Another variant product - Dress with sizes
+  {
+    id: "p8",
+    name: "فستان كاجوال",
+    type: "variant",
+    price: 250,
+    isActive: true,
+    variants: [
+      { id: "v13", size: "S", color: "بيج", price: 250, sku: "DRESS-BG-S", isActive: true },
+      { id: "v14", size: "M", color: "بيج", price: 250, sku: "DRESS-BG-M", isActive: true },
+      { id: "v15", size: "L", color: "بيج", price: 260, sku: "DRESS-BG-L", isActive: true },
+      { id: "v16", size: "S", color: "وردي", price: 250, sku: "DRESS-PK-S", isActive: true },
+      { id: "v17", size: "M", color: "وردي", price: 250, sku: "DRESS-PK-M", isActive: true },
+      { id: "v18", size: "L", color: "وردي", price: 260, sku: "DRESS-PK-L", isActive: true },
+    ],
+    createdAt: new Date("2024-03-10"),
   },
 ]
 
@@ -235,6 +281,39 @@ export const orders: Order[] = [
     subtotal: 580,
     total: 602,
     createdAt: new Date(Date.now() - 432000000),
+    updatedAt: new Date(),
+  },
+  // Order with variant product
+  {
+    id: "o7",
+    orderNumber: "ORD-007",
+    customer: customers[1],
+    items: [
+      { 
+        productId: "p7", 
+        productName: "تي شيرت قطني", 
+        variantId: "v6",
+        variantDetails: "Size: M, Color: أسود",
+        quantity: 2, 
+        price: 80 
+      },
+      { 
+        productId: "p8", 
+        productName: "فستان كاجوال", 
+        variantId: "v14",
+        variantDetails: "Size: M, Color: بيج",
+        quantity: 1, 
+        price: 250 
+      },
+    ],
+    status: "new",
+    paymentMethod: "cod",
+    paymentStatus: "unpaid",
+    deliveryCompany: deliveryCompanies[0],
+    deliveryCost: 25,
+    subtotal: 410,
+    total: 435,
+    createdAt: new Date(),
     updatedAt: new Date(),
   },
 ]

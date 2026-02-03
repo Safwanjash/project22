@@ -31,6 +31,8 @@ interface NewOrderClientPageProps {
 
 interface OrderItem {
     productId: string
+    variantId?: string
+    variantDetails?: string
     quantity: number
 }
 
@@ -86,6 +88,12 @@ export default function NewOrderClientPage({
             const product = initialProducts.find((p) => p.id === item.productId)
             let price = product?.price || 0
 
+            // If variant is selected, use variant price
+            if (item.variantId && product?.type === "variant" && product.variants) {
+                const variant = product.variants.find(v => v.id === item.variantId)
+                price = variant?.price || product.price
+            }
+
             return sum + price * item.quantity
         }, 0)
     }
@@ -97,8 +105,34 @@ export default function NewOrderClientPage({
 
     const [isLoading, setIsLoading] = useState(false)
 
+    // Check if all variant products have variants selected
+    const isFormValid = () => {
+        return orderItems.every(item => {
+            const product = initialProducts.find(p => p.id === item.productId)
+            // If it's a variant product, it must have a variant selected
+            if (product?.type === "variant") {
+                return !!item.variantId
+            }
+            return true
+        })
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        // Validate that variant products have a variant selected
+        for (const item of orderItems) {
+            const product = initialProducts.find(p => p.id === item.productId)
+            if (product?.type === "variant" && !item.variantId) {
+                toast({
+                    title: t("common.error"),
+                    description: t("products.selectVariantRequired") || "Please select a variant for all variant products",
+                    variant: "destructive"
+                })
+                return
+            }
+        }
+
         setIsLoading(true)
 
         try {
@@ -240,50 +274,102 @@ export default function NewOrderClientPage({
                                 const selectedProduct = activeProducts.find(p => p.id === item.productId)
 
                                 return (
-                                    <div key={index} className="flex gap-4 items-end border-b pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                                        <div className="flex-1 space-y-2">
-                                            <Label>{t("orders.product")}</Label>
-                                            <Select
-                                                value={item.productId}
-                                                onValueChange={(value) => {
-                                                    const newItems = [...orderItems]
-                                                    newItems[index] = { ...newItems[index], productId: value }
-                                                    setOrderItems(newItems)
-                                                }}
+                                    <div key={index} className="space-y-3 border-b pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                                        <div className="flex gap-4 items-end">
+                                            <div className="flex-1 space-y-2">
+                                                <Label>{t("orders.product")}</Label>
+                                                <Select
+                                                    value={item.productId}
+                                                    onValueChange={(value) => {
+                                                        const newItems = [...orderItems]
+                                                        // Reset variant when product changes
+                                                        newItems[index] = {
+                                                            ...newItems[index],
+                                                            productId: value,
+                                                            variantId: undefined,
+                                                            variantDetails: undefined
+                                                        }
+                                                        setOrderItems(newItems)
+                                                    }}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={t("orders.selectProduct")} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {activeProducts.map((product) => (
+                                                            <SelectItem key={product.id} value={product.id}>
+                                                                {product.name} - <PriceDisplay amount={product.price} />
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="w-24 space-y-2">
+                                                <Label>{t("orders.quantity")}</Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) =>
+                                                        updateItem(index, "quantity", parseInt(e.target.value) || 1)
+                                                    }
+                                                />
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="mb-0.5"
+                                                onClick={() => removeItem(index)}
+                                                disabled={orderItems.length === 1}
                                             >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t("orders.selectProduct")} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {activeProducts.map((product) => (
-                                                        <SelectItem key={product.id} value={product.id}>
-                                                            {product.name} - <PriceDisplay amount={product.price} />
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
-                                        <div className="w-24 space-y-2">
-                                            <Label>{t("orders.quantity")}</Label>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) =>
-                                                    updateItem(index, "quantity", parseInt(e.target.value) || 1)
-                                                }
-                                            />
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            className="mb-0.5"
-                                            onClick={() => removeItem(index)}
-                                            disabled={orderItems.length === 1}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+
+                                        {/* Variant Selection */}
+                                        {selectedProduct && selectedProduct.type === "variant" && selectedProduct.variants && (
+                                            <div className="space-y-2">
+                                                <Label>{t("products.selectVariant")} <span className="text-destructive">*</span></Label>
+                                                <Select
+                                                    value={item.variantId}
+                                                    onValueChange={(value) => {
+                                                        const variant = selectedProduct.variants?.find(v => v.id === value)
+                                                        if (variant) {
+                                                            const newItems = [...orderItems]
+                                                            newItems[index] = {
+                                                                ...newItems[index],
+                                                                variantId: value,
+                                                                variantDetails: `${t("products.size")}: ${variant.size}, ${t("products.color")}: ${variant.color}`
+                                                            }
+                                                            setOrderItems(newItems)
+                                                        }
+                                                    }}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={t("products.selectVariant")} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {selectedProduct.variants
+                                                            .filter(v => v.isActive)
+                                                            .map(variant => (
+                                                                <SelectItem key={variant.id} value={variant.id}>
+                                                                    {variant.size} - {variant.color}
+                                                                    {variant.price && variant.price !== selectedProduct.price && (
+                                                                        <span> - <PriceDisplay amount={variant.price} /></span>
+                                                                    )}
+                                                                </SelectItem>
+                                                            ))
+                                                        }
+                                                    </SelectContent>
+                                                </Select>
+                                                {selectedProduct.variants.filter(v => v.isActive).length === 0 && (
+                                                    <p className="text-sm text-destructive font-medium">
+                                                        {t("products.noVariantsAvailable")}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}

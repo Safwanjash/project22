@@ -14,14 +14,35 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Edit, Package, Loader2 } from "lucide-react"
+import { Plus, Search, Edit, Package, Loader2, Settings2, Trash2 } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
-import { createProduct, updateProduct, toggleProductStatus } from "@/app/actions"
-import type { Product } from "@/lib/types"
+import { createProduct, updateProduct, toggleProductStatus, deleteProduct } from "@/app/actions"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import type { Product, ProductVariant } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { PriceDisplay } from "@/components/dashboard/price-display"
 import { useLanguage } from "@/components/providers/language-provider"
+import { VariantForm } from "@/components/dashboard/variant-form"
+import { VariantList } from "@/components/dashboard/variant-list"
+import { randomUUID } from "crypto"
 
 interface ProductsClientPageProps {
     initialProducts: Product[]
@@ -34,13 +55,20 @@ const initialState = {
 }
 
 export default function ProductsClientPage({ initialProducts }: ProductsClientPageProps) {
-    const { t } = useLanguage()
+    const { t, isRTL } = useLanguage()
     const { toast } = useToast()
     const [searchQuery, setSearchQuery] = useState("")
     const [products, setProducts] = useState(initialProducts)
     const [showInactive, setShowInactive] = useState(true)
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
+    // Variant management state
+    const [productType, setProductType] = useState<"simple" | "variant">("simple")
+    const [variants, setVariants] = useState<ProductVariant[]>([])
+    const [isVariantFormOpen, setIsVariantFormOpen] = useState(false)
+    const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
+    const [managingVariantsFor, setManagingVariantsFor] = useState<Product | null>(null)
 
     // Sync props to state when server revalidates
     useEffect(() => {
@@ -60,11 +88,13 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
     useEffect(() => {
         if (createState.success) {
             setIsCreateOpen(false)
+            setVariants([])
+            setProductType("simple")
             toast({ title: t("common.success"), description: createState.message, variant: "default" })
         } else if (createState.message) {
             toast({ title: t("common.error"), description: createState.message, variant: "destructive" })
         }
-    }, [createState, toast])
+    }, [createState, toast, t])
 
     // Update Form State
     const [updateState, updateAction, isUpdating] = useActionState(updateProduct, initialState)
@@ -76,7 +106,7 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
         } else if (updateState.message) {
             toast({ title: t("common.error"), description: updateState.message, variant: "destructive" })
         }
-    }, [updateState, toast])
+    }, [updateState, toast, t])
 
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         // Optimistic update
@@ -92,6 +122,63 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
         }
     }
 
+    const handleDeleteProduct = async (id: string) => {
+        const result = await deleteProduct(id)
+        if (result.success) {
+            setProducts(products.filter(p => p.id !== id))
+            toast({ title: t("common.success"), description: result.message })
+        } else {
+            toast({ title: t("common.error"), description: result.message, variant: "destructive" })
+        }
+    }
+
+    // Variant management handlers
+    const handleSaveVariant = (variant: Omit<ProductVariant, "id">) => {
+        if (editingVariant) {
+            // Update existing
+            setVariants(variants.map(v => v.id === editingVariant.id ? { ...variant, id: editingVariant.id } : v))
+        } else {
+            // Add new
+            setVariants([...variants, { ...variant, id: `v${Date.now()}` }])
+        }
+        setEditingVariant(null)
+    }
+
+    const handleDeleteVariant = (variantId: string) => {
+        setVariants(variants.filter(v => v.id !== variantId))
+    }
+
+    const handleToggleVariantStatus = (variantId: string) => {
+        setVariants(variants.map(v => v.id === variantId ? { ...v, isActive: !v.isActive } : v))
+    }
+
+    const handleManageVariants = (product: Product) => {
+        setManagingVariantsFor(product)
+        setVariants(product.variants || [])
+        setProductType(product.type)
+    }
+
+    const handleSaveProductVariants = async () => {
+        if (!managingVariantsFor) return
+
+        const formData = new FormData()
+        formData.append("id", managingVariantsFor.id)
+        formData.append("name", managingVariantsFor.name)
+        formData.append("type", productType)
+        formData.append("price", managingVariantsFor.price.toString())
+        formData.append("image", managingVariantsFor.image || "")
+        formData.append("variants", JSON.stringify(variants))
+
+        const result = await updateProduct(initialState, formData)
+        if (result.success) {
+            toast({ title: t("common.success"), description: result.message })
+            setManagingVariantsFor(null)
+            setVariants([])
+        } else {
+            toast({ title: t("common.error"), description: result.message, variant: "destructive" })
+        }
+    }
+
     return (
         <div className="space-y-6 pt-12 lg:pt-0">
             {/* Header */}
@@ -100,18 +187,45 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                     <h1 className="text-2xl font-bold">{t("products.title")}</h1>
                     <p className="text-muted-foreground">{t("products.subtitle")}</p>
                 </div>
-                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <Dialog open={isCreateOpen} onOpenChange={(open) => {
+                    setIsCreateOpen(open)
+                    if (!open) {
+                        setVariants([])
+                        setProductType("simple")
+                    }
+                }}>
                     <DialogTrigger asChild>
                         <Button>
-                            <Plus className="h-4 w-4 ml-2" />
+                            <Plus className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
                             {t("products.addProduct")}
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>{t("products.addProduct")}</DialogTitle>
                         </DialogHeader>
-                        <form action={createAction} className="space-y-4 py-4">
+                        <form action={createAction} className="space-y-4 py-4" onSubmit={(e) => {
+                            // Add variants as hidden field before submit
+                            const form = e.target as HTMLFormElement
+                            const variantsInput = form.querySelector('input[name="variants"]') as HTMLInputElement
+                            if (variantsInput) {
+                                variantsInput.value = JSON.stringify(variants)
+                            }
+                        }}>
+                            <div className="space-y-2">
+                                <Label>{t("products.productType")}</Label>
+                                <Select value={productType} onValueChange={(v) => setProductType(v as "simple" | "variant")}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="simple">{t("products.simpleProduct")}</SelectItem>
+                                        <SelectItem value="variant">{t("products.variantProduct")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <input type="hidden" name="type" value={productType} />
+                            </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="name">{t("products.productName")}</Label>
                                 <Input id="name" name="name" placeholder={t("products.productName")} />
@@ -119,7 +233,9 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="price">{t("products.price")}</Label>
+                                <Label htmlFor="price">
+                                    {productType === "variant" ? `${t("products.price")} (${t("common.default")})` : t("products.price")}
+                                </Label>
                                 <Input
                                     id="price"
                                     name="price"
@@ -136,6 +252,41 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                 <Input id="image" name="image" placeholder="https://..." dir="ltr" />
                             </div>
 
+                            {/* Variant Management */}
+                            {productType === "variant" && (
+                                <div className="space-y-3 border rounded-lg p-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label>{t("products.variants")}</Label>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => setIsVariantFormOpen(true)}
+                                        >
+                                            <Plus className="w-4 h-4 mr-1" />
+                                            {t("products.addVariant")}
+                                        </Button>
+                                    </div>
+                                    {variants.length > 0 ? (
+                                        <VariantList
+                                            variants={variants}
+                                            basePrice={0}
+                                            onEdit={(v) => {
+                                                setEditingVariant(v)
+                                                setIsVariantFormOpen(true)
+                                            }}
+                                            onDelete={handleDeleteVariant}
+                                            onToggleStatus={handleToggleVariantStatus}
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-4">
+                                            {t("products.noVariants")}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            <input type="hidden" name="variants" />
+
                             <Button type="submit" className="w-full" disabled={isCreating}>
                                 {isCreating ? <Loader2 className="animate-spin" /> : t("common.add")}
                             </Button>
@@ -149,12 +300,12 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                 <CardContent className="p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="relative flex-1">
-                            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground`} />
                             <Input
                                 placeholder={t("products.searchPlaceholder")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pr-10"
+                                className={isRTL ? "pr-10" : "pl-10"}
                             />
                         </div>
                         <div className="flex items-center gap-2">
@@ -192,7 +343,14 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                 {/* Product Info */}
                                 <div className="space-y-2">
                                     <div className="flex items-start justify-between gap-2">
-                                        <h3 className="font-semibold leading-tight">{product.name}</h3>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold leading-tight">{product.name}</h3>
+                                            {product.type === "variant" && product.variants && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {product.variants.length} {t("products.variants")}
+                                                </p>
+                                            )}
+                                        </div>
                                         <Badge variant={product.isActive ? "default" : "secondary"}>
                                             {product.isActive ? t("products.active") : t("products.inactive")}
                                         </Badge>
@@ -212,7 +370,7 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                                 className="flex-1 bg-transparent"
                                                 onClick={() => setEditingProduct(product)}
                                             >
-                                                <Edit className="h-4 w-4 ml-1" />
+                                                <Edit className={`h-4 w-4 ${isRTL ? "ml-1" : "mr-1"}`} />
                                                 {t("common.edit")}
                                             </Button>
                                         </DialogTrigger>
@@ -222,6 +380,7 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                             </DialogHeader>
                                             <form action={updateAction} className="space-y-4 py-4">
                                                 <input type="hidden" name="id" value={product.id} />
+                                                <input type="hidden" name="type" value={product.type} />
 
                                                 <div className="space-y-2">
                                                     <Label htmlFor={`edit-name-${product.id}`}>
@@ -261,6 +420,17 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                             </form>
                                         </DialogContent>
                                     </Dialog>
+
+                                    {product.type === "variant" && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleManageVariants(product)}
+                                        >
+                                            <Settings2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+
                                     <Button
                                         variant={product.isActive ? "destructive" : "default"}
                                         size="sm"
@@ -268,6 +438,35 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
                                     >
                                         {product.isActive ? t("products.deactivate") : t("products.activate")}
                                     </Button>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="px-2"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t("common.delete")}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t("confirm.delete")}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                    className="bg-destructive hover:bg-destructive/90"
+                                                >
+                                                    {t("common.delete")}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </div>
                             </div>
                         </CardContent>
@@ -278,6 +477,68 @@ export default function ProductsClientPage({ initialProducts }: ProductsClientPa
             {filteredProducts.length === 0 && (
                 <EmptyState type="products" />
             )}
+
+            {/* Variant Form Dialog */}
+            <VariantForm
+                open={isVariantFormOpen}
+                onOpenChange={(open) => {
+                    setIsVariantFormOpen(open)
+                    if (!open) setEditingVariant(null)
+                }}
+                onSave={handleSaveVariant}
+                editingVariant={editingVariant}
+                existingVariants={variants}
+            />
+
+            {/* Manage Variants Dialog */}
+            <Dialog open={!!managingVariantsFor} onOpenChange={(open) => !open && setManagingVariantsFor(null)}>
+                <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t("products.manageVariants")} - {managingVariantsFor?.name}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">
+                                {variants.length} {t("products.variants")}
+                            </p>
+                            <Button
+                                size="sm"
+                                onClick={() => setIsVariantFormOpen(true)}
+                            >
+                                <Plus className="w-4 h-4 mr-1" />
+                                {t("products.addVariant")}
+                            </Button>
+                        </div>
+
+                        {variants.length > 0 ? (
+                            <VariantList
+                                variants={variants}
+                                basePrice={managingVariantsFor?.price || 0}
+                                onEdit={(v) => {
+                                    setEditingVariant(v)
+                                    setIsVariantFormOpen(true)
+                                }}
+                                onDelete={handleDeleteVariant}
+                                onToggleStatus={handleToggleVariantStatus}
+                            />
+                        ) : (
+                            <p className="text-center py-8 text-muted-foreground">
+                                {t("products.noVariants")}
+                            </p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setManagingVariantsFor(null)}>
+                            {t("common.cancel")}
+                        </Button>
+                        <Button onClick={handleSaveProductVariants}>
+                            {t("common.save")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
