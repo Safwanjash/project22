@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function LoginPage() {
-  const { t } = useLanguage()
+  const { t, language, setLanguage } = useLanguage()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
