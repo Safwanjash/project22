@@ -1,0 +1,256 @@
+"use client"
+
+import React from "react"
+import Link from "next/link"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTheme } from "@/components/providers/theme-provider"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  BarChart3,
+  Settings,
+  Users,
+  Store,
+  ShoppingCart,
+  LogOut,
+  Menu,
+  X,
+  Moon,
+  Sun,
+  Globe,
+} from "lucide-react"
+import { useState } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+export default function AdminDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const { isRTL, t, language, setLanguage } = useLanguage()
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const navItems = [
+    {
+      label: t("nav.dashboard"),
+      href: "/admin/dashboard",
+      icon: BarChart3,
+    },
+    {
+      label: t("admin.merchants"),
+      href: "/admin/dashboard/merchants",
+      icon: Store,
+    },
+    {
+      label: t("admin.users"),
+      href: "/admin/dashboard/users",
+      icon: Users,
+    },
+    {
+      label: t("nav.orders"),
+      href: "/admin/dashboard/orders",
+      icon: ShoppingCart,
+    },
+    {
+      label: t("nav.reports"),
+      href: "/admin/dashboard/reports",
+      icon: BarChart3,
+    },
+    {
+      label: t("nav.settings"),
+      href: "/admin/dashboard/settings",
+      icon: Settings,
+    },
+  ]
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Mobile Header */}
+      <div className={cn(
+        "lg:hidden fixed top-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40",
+        isRTL ? "right-0 left-0" : "right-0 left-0"
+      )}>
+        <h1 className="font-bold text-lg">{t("admin.title")}</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          {sidebarOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
+        </Button>
+      </div>
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed top-0 w-64 h-screen bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300",
+          isRTL
+            ? "right-0 border-l lg:border-l"
+            : "left-0 border-r lg:border-r",
+          sidebarOpen ? "translate-x-0" : (isRTL ? "translate-x-full lg:translate-x-0" : "-translate-x-full lg:translate-x-0")
+        )}
+      >
+        {/* Logo Area */}
+        <div className="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center px-6 hidden lg:flex">
+          <h1 className="text-xl font-bold text-primary">
+            {t("admin.title")}
+          </h1>
+        </div>
+
+        {/* Navigation */}
+        <ScrollArea className="flex-1 py-6 px-3">
+          <nav className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 px-4",
+                      isRTL && "flex-row-reverse"
+                    )}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className={cn("flex-1", isRTL ? "text-right" : "text-left")}>{item.label}</span>
+                  </Button>
+                </Link>
+              )
+            })}
+          </nav>
+        </ScrollArea>
+
+        {/* Controls and Logout */}
+        <div className="border-t border-slate-200 dark:border-slate-800 p-4 space-y-2">
+          {/* Language and Theme Toggles */}
+          <div className="flex gap-2">
+            {/* Language Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Change language"
+                  className="flex-1"
+                >
+                  <Globe className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align={isRTL ? "start" : "end"}
+                className="w-48"
+              >
+                <DropdownMenuItem
+                  onClick={() => setLanguage("ar")}
+                  className={
+                    language === "ar" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  العربية
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLanguage("en")}
+                  className={
+                    language === "en" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Theme Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Change theme"
+                  className="flex-1"
+                >
+                  {resolvedTheme === "dark" ? (
+                    <Moon className="w-4 h-4" />
+                  ) : (
+                    <Sun className="w-4 h-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align={isRTL ? "start" : "end"}
+                className="w-48"
+              >
+                <DropdownMenuItem
+                  onClick={() => setTheme("light")}
+                  className={
+                    theme === "light" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.lightMode")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("dark")}
+                  className={
+                    theme === "dark" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.darkMode")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("system")}
+                  className={
+                    theme === "system" ? "bg-slate-100 dark:bg-slate-800" : ""
+                  }
+                >
+                  {t("settings.systemMode")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Logout Button */}
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start gap-3",
+              isRTL && "flex-row-reverse"
+            )}
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span>{t("nav.logout")}</span>
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main
+        className={cn(
+          "min-h-screen transition-all duration-300",
+          isRTL ? "lg:mr-64" : "lg:ml-64",
+          "pt-16 lg:pt-0"
+        )}
+      >
+        <div className="p-4 lg:p-8">{children}</div>
+      </main>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 lg:hidden z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </div>
+  )
+}
