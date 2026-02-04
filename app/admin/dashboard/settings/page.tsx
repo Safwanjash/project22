@@ -91,7 +91,7 @@ export default function SettingsPage() {
             <div className={cn("grid gap-4", isRTL ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
               <div className="space-y-2">
                 <Label htmlFor="commission-percentage">
-                  {t("common.total")} {t("nav.orders")} {t("settings.discount")} %
+                  {t("common.discount")} %
                 </Label>
                 <Input
                   id="commission-percentage"
@@ -105,7 +105,7 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="min-order">
-                  {t("common.total")} {t("nav.orders")} {t("common.minimum")} ($)
+                  {t("common.minimum")} {t("common.amount")} ($)
                 </Label>
                 <Input
                   id="min-order"
