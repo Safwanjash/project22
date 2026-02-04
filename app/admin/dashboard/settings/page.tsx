@@ -208,7 +208,7 @@ export default function SettingsPage() {
       <Card className="p-6 border-red-200 dark:border-red-900/30 space-y-4">
         <h3 className="text-lg font-semibold text-red-600">{t("common.actions")}</h3>
         <p className="text-sm text-muted-foreground">
-          {t("settings.settingsDesc")}
+          {t("common.delete")} {t("common.total")} {t("common.data")}
         </p>
         <Button variant="destructive">
           {t("common.delete")} {t("common.total")} {t("common.data")}
