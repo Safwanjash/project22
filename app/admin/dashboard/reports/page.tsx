@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useLanguage } from "@/components/providers/language-provider"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,11 +9,20 @@ import {
   TrendingUp,
   Download,
   Calendar,
+  Check,
+  FileSpreadsheet,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function ReportsPage() {
   const { t, isRTL } = useLanguage()
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("thisMonth")
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   const reports = [
     {
@@ -61,15 +71,81 @@ export default function ReportsPage() {
     { name: "Home & Living", revenue: 87300, orders: 1654 },
   ]
 
+  const handleExportPDF = () => {
+    // Simulated PDF export
+    showToast(`${t("common.exportPDF")}: ${t("nav.reports")}`)
+  }
+
+  const handleExportCSV = () => {
+    const headers = ["Metric", "Value", "Change"]
+    const csvContent = [
+      headers.join(","),
+      ...reports.map(report => [
+        `"${report.title}"`,
+        `"${report.value}"`,
+        report.change
+      ].join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    link.href = URL.createObjectURL(blob)
+    link.download = `platform_report_${new Date().toISOString().split("T")[0]}.csv`
+    link.click()
+    showToast(`${t("common.export")} CSV`)
+  }
+
+  const handleExportExcel = () => {
+    // Simulated Excel export (same as CSV with different extension for demo)
+    const headers = ["Store", "Revenue", "Orders"]
+    const csvContent = [
+      headers.join(","),
+      ...topMerchants.map(merchant => [
+        `"${merchant.name}"`,
+        merchant.revenue,
+        merchant.orders
+      ].join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "application/vnd.ms-excel" })
+    const link = document.createElement("a")
+    link.href = URL.createObjectURL(blob)
+    link.download = `merchants_report_${new Date().toISOString().split("T")[0]}.xls`
+    link.click()
+    showToast(`${t("common.export")} Excel`)
+  }
+
+  const handleExportAll = () => {
+    handleExportCSV()
+  }
+
+  const handlePeriodChange = (period: string) => {
+    setSelectedPeriod(period)
+    showToast(t(`periods.${period}`))
+  }
+
   return (
     <div className="space-y-8">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={cn(
+          "fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all",
+          toast.type === "success"
+            ? "bg-green-600 text-white"
+            : "bg-red-600 text-white"
+        )}>
+          <Check className="w-4 h-4" />
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">{t("nav.reports")}</h1>
           <p className="text-muted-foreground">{t("admin.reportsDesc")}</p>
         </div>
-        <Button>
+        <Button onClick={handleExportAll}>
           <Download className="w-4 h-4 mr-2" />
           {t("common.export")}
         </Button>
@@ -134,19 +210,35 @@ export default function ReportsPage() {
         <Card className="p-6 border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-semibold mb-4">{t("filters.dateRange")}</h3>
           <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
+            <Button
+              variant={selectedPeriod === "thisMonth" ? "default" : "outline"}
+              className="w-full justify-start"
+              onClick={() => handlePeriodChange("thisMonth")}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               {t("periods.thisMonth")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button
+              variant={selectedPeriod === "lastMonth" ? "default" : "outline"}
+              className="w-full justify-start"
+              onClick={() => handlePeriodChange("lastMonth")}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               {t("periods.lastMonth")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button
+              variant={selectedPeriod === "thisYear" ? "default" : "outline"}
+              className="w-full justify-start"
+              onClick={() => handlePeriodChange("thisYear")}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               {t("periods.thisYear")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button
+              variant={selectedPeriod === "custom" ? "default" : "outline"}
+              className="w-full justify-start"
+              onClick={() => handlePeriodChange("custom")}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               {t("filters.custom")}
             </Button>
@@ -156,7 +248,13 @@ export default function ReportsPage() {
 
       {/* Top Merchants */}
       <Card className="p-6 border-slate-200 dark:border-slate-800">
-        <h3 className="text-lg font-semibold mb-4">{t("admin.merchants")}</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">{t("admin.merchants")}</h3>
+          <Button variant="ghost" size="sm" onClick={handleExportExcel}>
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -198,15 +296,15 @@ export default function ReportsPage() {
       <Card className="p-6 border-slate-200 dark:border-slate-800">
         <h3 className="text-lg font-semibold mb-4">{t("common.export")}</h3>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={handleExportPDF}>
             <Download className="w-4 h-4 mr-2" />
             PDF
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={handleExportCSV}>
             <Download className="w-4 h-4 mr-2" />
             CSV
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={handleExportExcel}>
             <Download className="w-4 h-4 mr-2" />
             Excel
           </Button>

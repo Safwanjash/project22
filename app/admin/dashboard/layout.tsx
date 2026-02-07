@@ -19,6 +19,7 @@ import {
   Moon,
   Sun,
   Globe,
+  Activity,
 } from "lucide-react"
 import { useState } from "react"
 import {
@@ -49,7 +50,7 @@ export default function AdminDashboardLayout({
       icon: Store,
     },
     {
-      label: t("admin.users"),
+      label: t("admin.platformAdmins"),
       href: "/admin/dashboard/users",
       icon: Users,
     },
@@ -62,6 +63,11 @@ export default function AdminDashboardLayout({
       label: t("nav.reports"),
       href: "/admin/dashboard/reports",
       icon: BarChart3,
+    },
+    {
+      label: t("admin.activityLogs"),
+      href: "/admin/dashboard/activity-logs",
+      icon: Activity,
     },
     {
       label: t("nav.settings"),

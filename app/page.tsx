@@ -19,6 +19,11 @@ import {
   Zap,
   Shield,
   Smile,
+  Store,
+  Smartphone,
+  TrendingUp,
+  Package,
+  Menu
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -26,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 
 export default function HomePage() {
@@ -335,12 +341,61 @@ export default function HomePage() {
             </DropdownMenu>
 
             <Button
+              variant="default"
+              asChild
+              className="hidden sm:inline-flex transition-all-smooth hover:scale-105"
+            >
+              <Link href="/merchant-register">{t("registerStore")}</Link>
+            </Button>
+            <Button
               variant="ghost"
               asChild
-              className="transition-all-smooth hover:bg-primary hover:text-primary-foreground"
+              className="hidden sm:inline-flex transition-all-smooth hover:bg-primary hover:text-primary-foreground"
             >
               <Link href="/login">{t("home.signIn")}</Link>
             </Button>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden flex items-center gap-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="w-6 h-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                  <div className="flex flex-col gap-6 py-4">
+                    <div className="flex items-center gap-2 px-2">
+                      <Store className="w-6 h-6 text-primary" />
+                      <span className="text-xl font-bold">{t("home.title")}</span>
+                    </div>
+                    <nav className="flex flex-col gap-4">
+                      {["features", "howItWorks", "testimonials"].map((item) => (
+                        <a
+                          key={item}
+                          href={`#${item}`}
+                          className="block px-2 py-1 text-lg font-medium hover:text-primary transition-colors"
+                        >
+                          {t(`home.${item}`)}
+                        </a>
+                      ))}
+                      <Link
+                        href="/login"
+                        className="block px-2 py-1 text-lg font-medium hover:text-primary transition-colors"
+                      >
+                        {t("home.signIn")}
+                      </Link>
+                      <Link
+                        href="/merchant-register"
+                        className="block px-2 py-1 text-lg font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {t("registerStore")}
+                      </Link>
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </nav>

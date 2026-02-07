@@ -10,6 +10,8 @@ import {
   Search,
   Eye,
   MoreVertical,
+  Download,
+  Check,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -17,13 +19,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+
+interface Order {
+  id: string
+  merchant: string
+  customer: string
+  amount: number
+  items: number
+  status: string
+  date: string
+}
 
 export default function OrdersPage() {
   const { t, isRTL } = useLanguage()
   const [searchTerm, setSearchTerm] = useState("")
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [viewDialog, setViewDialog] = useState<{ open: boolean; order: Order | null }>({ open: false, order: null })
 
-  const orders = [
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const orders: Order[] = [
     {
       id: "#ORD-001234",
       merchant: "Ahmed Electronics",
@@ -107,14 +132,58 @@ export default function OrdersPage() {
     return t(statusKey)
   }
 
+  const handleExport = () => {
+    const headers = ["Order ID", "Merchant", "Customer", "Items", "Amount", "Status", "Date"]
+    const csvContent = [
+      headers.join(","),
+      ...filteredOrders.map(order => [
+        order.id,
+        `"${order.merchant}"`,
+        `"${order.customer}"`,
+        order.items,
+        order.amount,
+        order.status,
+        order.date
+      ].join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    link.href = URL.createObjectURL(blob)
+    link.download = `orders_${new Date().toISOString().split("T")[0]}.csv`
+    link.click()
+    showToast(`${t("common.export")}: ${filteredOrders.length} ${t("nav.orders").toLowerCase()}`)
+  }
+
+  const handleViewOrder = (order: Order) => {
+    setViewDialog({ open: true, order })
+  }
+
   return (
     <div className="space-y-8">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={cn(
+          "fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all",
+          toast.type === "success"
+            ? "bg-green-600 text-white"
+            : "bg-red-600 text-white"
+        )}>
+          <Check className="w-4 h-4" />
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">{t("nav.orders")}</h1>
           <p className="text-muted-foreground">{t("admin.ordersDesc")}</p>
         </div>
+        <Button variant="outline" onClick={handleExport}>
+          <Download className="w-4 h-4 mr-2" />
+          {t("common.export")}
+        </Button>
       </div>
 
       {/* Search */}
@@ -172,7 +241,7 @@ export default function OrdersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align={isRTL ? "start" : "end"}>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewOrder(order)}>
                           <Eye className="w-4 h-4 mr-2" />
                           {t("common.view")}
                         </DropdownMenuItem>
@@ -211,6 +280,47 @@ export default function OrdersPage() {
           </p>
         </Card>
       </div>
+
+      {/* View Order Dialog */}
+      <Dialog open={viewDialog.open} onOpenChange={(open) => !open && setViewDialog({ open: false, order: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("common.view")} {viewDialog.order?.id}</DialogTitle>
+          </DialogHeader>
+          {viewDialog.order && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("admin.store")}</p>
+                  <p className="font-medium">{viewDialog.order.merchant}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("orders.customer")}</p>
+                  <p className="font-medium">{viewDialog.order.customer}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("orders.items")}</p>
+                  <p className="font-medium">{viewDialog.order.items}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("common.total")}</p>
+                  <p className="font-medium">${viewDialog.order.amount.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("common.status")}</p>
+                  <Badge variant={getStatusColor(viewDialog.order.status) as any}>
+                    {getStatusLabel(viewDialog.order.status)}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{t("common.date")}</p>
+                  <p className="font-medium">{viewDialog.order.date}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
