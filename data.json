@@ -192,6 +192,16 @@
       "phone": "0595203958",
       "cost": 30,
       "isActive": true
+    },
+    {
+      "id": "80ad8159-c965-4b8a-ae01-3b9b73fab8ff",
+      "name": "Productionserver",
+      "phone": "0595203958",
+      "cost": 20,
+      "costWestBank": 20,
+      "cost1948": 70,
+      "costJerusalem": 40,
+      "isActive": true
     }
   ],
   "orders": [

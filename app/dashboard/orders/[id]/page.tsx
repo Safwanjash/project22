@@ -301,6 +301,14 @@ function OrderDetailsContent({ order }: { order: NonNullable<ReturnType<typeof g
                   {order.deliveryCompany?.name || "غير محدد"}
                 </span>
               </div>
+              {order.deliveryZone && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">{t("delivery.zones.title")}</span>
+                  <span className="font-medium">
+                    {t(`delivery.zones.${order.deliveryZone}`)}
+                  </span>
+                </div>
+              )}
               {order.deliveryCompany && (
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">{t("common.phone")}</span>

@@ -54,6 +54,7 @@ export default function NewOrderClientPage({
     const [selectedCustomer, setSelectedCustomer] = useState<string>("")
     const [orderItems, setOrderItems] = useState<OrderItem[]>([{ productId: "", quantity: 1 }])
     const [deliveryCompanyId, setDeliveryCompanyId] = useState<string>("")
+    const [deliveryZone, setDeliveryZone] = useState<"west_bank" | "1948" | "jerusalem">("west_bank")
     const [paymentMethod, setPaymentMethod] = useState<string>("cod")
     const [notes, setNotes] = useState("")
 
@@ -99,7 +100,15 @@ export default function NewOrderClientPage({
     }
 
     const selectedDelivery = initialDeliveryCompanies.find((d) => d.id === deliveryCompanyId)
-    const deliveryCost = selectedDelivery?.cost || 0
+    let deliveryCost = 0
+    if (selectedDelivery) {
+        if (deliveryZone === "west_bank") deliveryCost = selectedDelivery.costWestBank || selectedDelivery.cost
+        else if (deliveryZone === "1948") deliveryCost = selectedDelivery.cost1948 || 0
+        else if (deliveryZone === "jerusalem") deliveryCost = selectedDelivery.costJerusalem || 0
+
+        // Fallback
+        if (isNaN(deliveryCost)) deliveryCost = selectedDelivery.cost || 0
+    }
     const subtotal = calculateSubtotal()
     const total = subtotal + deliveryCost
 
@@ -146,6 +155,7 @@ export default function NewOrderClientPage({
                 } : undefined,
                 items: orderItems,
                 deliveryCompanyId,
+                deliveryZone,
                 paymentMethod: paymentMethod as "cod" | "bank_transfer",
                 notes
             }
@@ -408,17 +418,39 @@ export default function NewOrderClientPage({
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
+                                <Label>{t("delivery.zones.title") || "المنطقة"}</Label>
+                                <Select value={deliveryZone} onValueChange={(v: any) => setDeliveryZone(v)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="west_bank">{t("delivery.zones.west_bank") || "الضفة الغربية"}</SelectItem>
+                                        <SelectItem value="1948">{t("delivery.zones.area_1948") || "الداخل (48)"}</SelectItem>
+                                        <SelectItem value="jerusalem">{t("delivery.zones.jerusalem") || "القدس"}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label>{t("orders.deliveryCompany")}</Label>
                                 <Select value={deliveryCompanyId} onValueChange={setDeliveryCompanyId}>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t("orders.selectDeliveryCompany")} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {activeDeliveryCompanies.map((company) => (
-                                            <SelectItem key={company.id} value={company.id}>
-                                                {company.name} - <PriceDisplay amount={company.cost} />
-                                            </SelectItem>
-                                        ))}
+                                        {activeDeliveryCompanies.map((company) => {
+                                            let cost = 0
+                                            if (deliveryZone === "west_bank") cost = company.costWestBank || company.cost
+                                            else if (deliveryZone === "1948") cost = company.cost1948 || 0
+                                            else if (deliveryZone === "jerusalem") cost = company.costJerusalem || 0
+                                            if (isNaN(cost)) cost = company.cost || 0
+
+                                            return (
+                                                <SelectItem key={company.id} value={company.id}>
+                                                    {company.name} - <PriceDisplay amount={cost} />
+                                                </SelectItem>
+                                            )
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>

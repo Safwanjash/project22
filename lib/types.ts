@@ -37,7 +37,10 @@ export interface DeliveryCompany {
   id: string
   name: string
   phone: string
-  cost: number
+  cost: number // Legacy/Default (West Bank)
+  costWestBank: number
+  cost1948: number
+  costJerusalem: number
   isActive: boolean
 }
 
@@ -60,6 +63,7 @@ export interface Order {
   paymentStatus: PaymentStatus
   paymentProof?: string
   deliveryCompany?: DeliveryCompany
+  deliveryZone?: "west_bank" | "1948" | "jerusalem" // New field
   deliveryCost: number
   subtotal: number
   total: number

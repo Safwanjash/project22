@@ -189,6 +189,7 @@ const createOrderSchema = z.object({
   }).optional(),
   items: z.array(orderItemSchema).min(1, "يجب إضافة منتج واحد على الأقل"),
   deliveryCompanyId: z.string().optional(),
+  deliveryZone: z.enum(["west_bank", "1948", "jerusalem"]).optional(),
   paymentMethod: z.enum(["cod", "bank_transfer"]),
   notes: z.string().optional(),
 })
@@ -274,11 +275,16 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
     // 3. Resolve Delivery
     let deliveryCost = 0
     let deliveryCompanyObj = undefined
-    if (data.deliveryCompanyId) {
+    if (data.deliveryCompanyId && data.deliveryZone) {
         const dc = db.deliveryCompanies.find(d => d.id === data.deliveryCompanyId)
         if (dc) {
             deliveryCompanyObj = dc
-            deliveryCost = dc.cost
+            if (data.deliveryZone === "west_bank") deliveryCost = dc.costWestBank || dc.cost
+            else if (data.deliveryZone === "1948") deliveryCost = dc.cost1948 || 0
+            else if (data.deliveryZone === "jerusalem") deliveryCost = dc.costJerusalem || 0
+            
+            // Fallback for legacy data if needed or 0
+            if (isNaN(deliveryCost)) deliveryCost = dc.cost || 0
         }
     }
 
@@ -292,6 +298,7 @@ export async function createOrder(data: z.infer<typeof createOrderSchema>) {
         paymentMethod: data.paymentMethod,
         paymentStatus: "unpaid" as const, // Default
         deliveryCompany: deliveryCompanyObj,
+        deliveryZone: data.deliveryZone,
         deliveryCost,
         subtotal,
         total: subtotal + deliveryCost,
@@ -433,14 +440,20 @@ export async function deleteCustomer(id: string) {
 const deliveryCompanySchema = z.object({
   name: z.string().min(2, "الاسم مطلوب"),
   phone: z.string().optional(),
-  cost: z.coerce.number().min(0, "التكلفة يجب أن تكون 0 أو أكثر"),
+  cost: z.coerce.number().min(0, "التكلفة يجب أن تكون 0 أو أكثر"), // Defaults to West Bank
+  costWestBank: z.coerce.number().min(0),
+  cost1948: z.coerce.number().min(0),
+  costJerusalem: z.coerce.number().min(0),
 })
 
 export async function createDeliveryCompany(currentState: any, formData: FormData) {
   const rawData = {
     name: formData.get("name"),
     phone: formData.get("phone"),
-    cost: formData.get("cost"),
+    cost: formData.get("costWestBank"), // Legacy cost maps to West Bank for now
+    costWestBank: formData.get("costWestBank"),
+    cost1948: formData.get("cost1948"),
+    costJerusalem: formData.get("costJerusalem"),
   }
 
   const result = deliveryCompanySchema.safeParse(rawData)
@@ -477,7 +490,10 @@ export async function updateDeliveryCompany(currentState: any, formData: FormDat
     const rawData = {
       name: formData.get("name"),
       phone: formData.get("phone"),
-      cost: formData.get("cost"),
+      cost: formData.get("costWestBank"),
+      costWestBank: formData.get("costWestBank"),
+      cost1948: formData.get("cost1948"),
+      costJerusalem: formData.get("costJerusalem"),
     }
   
     const result = deliveryCompanySchema.safeParse(rawData)

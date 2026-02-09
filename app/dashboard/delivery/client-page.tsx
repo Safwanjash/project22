@@ -160,11 +160,21 @@ export default function DeliveryClientPage({ initialCompanies, initialOrders }: 
                                     <Label htmlFor="company-phone">{t("common.phone")}</Label>
                                     <Input id="company-phone" name="phone" placeholder="9200xxxxx" dir="ltr" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="company-cost">{t("reports.deliveryCosts")}</Label>
-                                    <Input id="company-cost" name="cost" type="number" placeholder="0" dir="ltr" />
-                                    {createState.errors?.cost && <p className="text-sm text-red-500">{createState.errors.cost}</p>}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cost-wb">{t("delivery.costs.west_bank")}</Label>
+                                        <Input id="cost-wb" name="costWestBank" type="number" placeholder="0" dir="ltr" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cost-48">{t("delivery.costs.area_1948")}</Label>
+                                        <Input id="cost-48" name="cost1948" type="number" placeholder="0" dir="ltr" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cost-jer">{t("delivery.costs.jerusalem")}</Label>
+                                        <Input id="cost-jer" name="costJerusalem" type="number" placeholder="0" dir="ltr" />
+                                    </div>
                                 </div>
+                                {createState.errors?.cost && <p className="text-sm text-red-500">{createState.errors.cost}</p>}
                                 <Button className="w-full" disabled={isCreating}>
                                     {isCreating ? <Loader2 className="animate-spin" /> : t("delivery.addCompany")}
                                 </Button>
@@ -236,8 +246,12 @@ export default function DeliveryClientPage({ initialCompanies, initialOrders }: 
                                                 <span dir="ltr">{company.phone}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="font-semibold">
-                                            <PriceDisplay amount={company.cost} />
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1 text-sm">
+                                                <div><span className="text-muted-foreground">{t("delivery.zones.west_bank")}:</span> <PriceDisplay amount={company.costWestBank || company.cost} /></div>
+                                                <div><span className="text-muted-foreground">{t("delivery.zones.area_1948")}:</span> <PriceDisplay amount={company.cost1948 || 0} /></div>
+                                                <div><span className="text-muted-foreground">{t("delivery.zones.jerusalem")}:</span> <PriceDisplay amount={company.costJerusalem || 0} /></div>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={company.isActive ? "default" : "secondary"}>
@@ -267,16 +281,36 @@ export default function DeliveryClientPage({ initialCompanies, initialOrders }: 
                                                                 <Label>{t("common.phone")}</Label>
                                                                 <Input name="phone" defaultValue={company.phone} dir="ltr" />
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <Label>{t("reports.deliveryCosts")}</Label>
-                                                                <Input
-                                                                    name="cost"
-                                                                    type="number"
-                                                                    defaultValue={company.cost}
-                                                                    dir="ltr"
-                                                                />
-                                                                {editingCompany?.id === company.id && updateState.errors?.cost && <p className="text-sm text-red-500">{updateState.errors.cost}</p>}
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <div className="space-y-2">
+                                                                    <Label>{t("delivery.costs.west_bank")}</Label>
+                                                                    <Input
+                                                                        name="costWestBank"
+                                                                        type="number"
+                                                                        defaultValue={company.costWestBank ?? company.cost}
+                                                                        dir="ltr"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Label>{t("delivery.costs.area_1948")}</Label>
+                                                                    <Input
+                                                                        name="cost1948"
+                                                                        type="number"
+                                                                        defaultValue={company.cost1948}
+                                                                        dir="ltr"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Label>{t("delivery.costs.jerusalem")}</Label>
+                                                                    <Input
+                                                                        name="costJerusalem"
+                                                                        type="number"
+                                                                        defaultValue={company.costJerusalem}
+                                                                        dir="ltr"
+                                                                    />
+                                                                </div>
                                                             </div>
+                                                            {editingCompany?.id === company.id && updateState.errors?.cost && <p className="text-sm text-red-500">{updateState.errors.cost}</p>}
                                                             <Button className="w-full" disabled={isUpdating}>
                                                                 {isUpdating ? <Loader2 className="animate-spin" /> : t("common.save")}
                                                             </Button>

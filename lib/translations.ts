@@ -253,6 +253,16 @@ export const translations = {
       companyName: "اسم الشركة",
       contact: "جهة الاتصال",
       phone: "رقم الهاتف",
+      zones: {
+        west_bank: "الضفة الغربية",
+        area_1948: "الداخل (48)",
+        jerusalem: "القدس",
+      },
+      costs: {
+        west_bank: "سعر الضفة",
+        area_1948: "سعر الداخل",
+        jerusalem: "سعر القدس",
+      },
       activeOrders: "الطلبات النشطة",
       successRate: "معدل النجاح",
       noCompanies: "لا توجد شركات توصيل",
